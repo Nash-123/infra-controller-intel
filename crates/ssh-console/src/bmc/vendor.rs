@@ -87,7 +87,7 @@ impl BmcVendor {
             BMCVendor::GigaComputing => BmcVendor::Ipmi(IpmiBmcVendor::GigaComputing),
             // Intentionally not doing a default `_` case so we get compiler errors (and can add more cases) later.
             // TODO: figure out what kind of connection power shelves use.
-            BMCVendor::Liteon | BMCVendor::Delta | BMCVendor::Sushy | BMCVendor::Unknown => {
+            BMCVendor::Liteon | BMCVendor::Delta | BMCVendor::Sushy | BMCVendor::Intel | BMCVendor::Unknown => {
                 return Err(BmcVendorDetectionError::UnknownSysVendor {
                     sys_vendor: vendor_string.to_owned(),
                 });

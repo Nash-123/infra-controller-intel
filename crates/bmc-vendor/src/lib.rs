@@ -42,6 +42,7 @@ pub enum BMCVendor {
     Nvidia, // DPU, Viking, Oberon
     Liteon,
     Delta,
+    Intel,
     Sushy,
     #[serde(other)]
     #[default]
@@ -67,6 +68,7 @@ impl From<&str> for BMCVendor {
             "nvidia" => BMCVendor::Nvidia,
             "liteon" => BMCVendor::Liteon,
             "delta" => BMCVendor::Delta,
+            "intel" => BMCVendor::Intel,
             "sushy" => BMCVendor::Sushy,
             _ => BMCVendor::Unknown,
         }
@@ -170,6 +172,7 @@ impl BMCVendor {
             "Supermicro" => BMCVendor::Supermicro,
             "Giga Computing" => BMCVendor::GigaComputing,
             "HPE" => BMCVendor::Hpe,
+            "Intel Corporation" => BMCVendor::Intel,
             _ => BMCVendor::Unknown,
         }
     }
@@ -186,6 +189,7 @@ impl BMCVendor {
             BMCVendor::Nvidia => "Nvidia",
             BMCVendor::Liteon => "Liteon",
             BMCVendor::Delta => "Delta",
+            BMCVendor::Intel => "Intel",
             BMCVendor::Sushy => "Sushy",
             BMCVendor::Unknown => "Unknown",
         }
@@ -211,6 +215,10 @@ impl BMCVendor {
         *self == Self::Sushy
     }
 
+    pub fn is_intel(&self) -> bool {
+        *self == Self::Intel
+    }
+
     pub fn is_unknown(&self) -> bool {
         *self == Self::Unknown
     }
@@ -230,6 +238,7 @@ mod tests {
         is_dell: bool,
         is_sushy: bool,
         is_unknown: bool,
+        is_intel: bool,
     }
 
     #[test]
@@ -248,6 +257,7 @@ mod tests {
                         is_dell: vendor.is_dell(),
                         is_sushy: vendor.is_sushy(),
                         is_unknown: vendor.is_unknown(),
+                        is_intel: vendor.is_intel(),
                     },
                 )
             };
@@ -304,6 +314,15 @@ mod tests {
                     "Nvidia".to_string(),
                     VendorPredicates {
                         is_nvidia: true,
+                        ..Default::default()
+                    },
+                ),
+                "INTEL" => (
+                    BMCVendor::Intel,
+                    "intel".to_string(),
+                    "Intel".to_string(),
+                    VendorPredicates {
+                        is_intel: true,
                         ..Default::default()
                     },
                 ),
@@ -366,6 +385,7 @@ mod tests {
     fn bmc_vendor_from_udev_dmi_classifies_system_vendors() {
         value_scenarios!(BMCVendor::from_udev_dmi:
             "known system vendors" {
+                "Intel Corporation" => BMCVendor::Intel,
                 "Lenovo" => BMCVendor::Lenovo,
                 "Dell Inc." => BMCVendor::Dell,
                 "https://www.mellanox.com" => BMCVendor::Nvidia,
