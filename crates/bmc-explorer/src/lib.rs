@@ -294,7 +294,8 @@ pub async fn nv_generate_exploration_report<B: Bmc>(
                 | hw::HwType::Gb200
                 | hw::HwType::LiteonPowerShelf
                 | hw::HwType::DeltaPowerShelf
-                | hw::HwType::NvSwitch,
+                | hw::HwType::NvSwitch
+                | hw::HwType::Intel,
             ) => false,
             None => false,
         })
@@ -558,6 +559,14 @@ pub(crate) fn hw_type<B: Bmc>(
             explored_chassis
                 .is_delta_powershelf()
                 .then_some(hw::HwType::DeltaPowerShelf)
+        })
+        // Intel S2600BP BMCs report no Vendor in the service root; match the system Manufacturer.
+        .or_else(|| {
+            system
+                .hardware_id()
+                .manufacturer
+                .is_some_and(|m| m.into_inner().eq_ignore_ascii_case("Intel Corporation"))
+                .then_some(hw::HwType::Intel)
         })
 }
 
@@ -891,6 +900,7 @@ fn machine_setup_status<B: Bmc>(
         hw::HwType::LiteonPowerShelf => (),
         hw::HwType::DeltaPowerShelf => (),
         hw::HwType::NvSwitch => (),
+        hw::HwType::Intel => (),
         hw::HwType::Viking => {
             diffs.extend(
                 hw::viking::EXPECTED_BIOS_ATTRS

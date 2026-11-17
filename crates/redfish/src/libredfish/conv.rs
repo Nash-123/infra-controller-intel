@@ -167,6 +167,7 @@ pub fn bmc_vendor(r: libredfish::model::service_root::RedfishVendor) -> BMCVendo
         RedfishVendor::LiteOnPowerShelf => BMCVendor::Liteon,
         RedfishVendor::DeltaPowerShelf => BMCVendor::Delta,
         RedfishVendor::Supermicro => BMCVendor::Supermicro,
+        RedfishVendor::Intel => BMCVendor::Intel,
         RedfishVendor::Sushy | RedfishVendor::Unknown => BMCVendor::Unknown,
     }
 }

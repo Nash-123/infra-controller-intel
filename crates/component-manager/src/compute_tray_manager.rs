@@ -43,6 +43,7 @@ impl From<bmc_vendor::BMCVendor> for ComputeTrayVendor {
             | bmc_vendor::BMCVendor::GigaComputing
             | bmc_vendor::BMCVendor::Liteon
             | bmc_vendor::BMCVendor::Delta
+            | bmc_vendor::BMCVendor::Intel
             | bmc_vendor::BMCVendor::Unknown => Self::Unknown,
         }
     }
@@ -178,6 +179,7 @@ mod tests {
                 BMCVendor::GigaComputing => ComputeTrayVendor::Unknown,
                 BMCVendor::Liteon => ComputeTrayVendor::Unknown,
                 BMCVendor::Delta => ComputeTrayVendor::Unknown,
+                BMCVendor::Intel => ComputeTrayVendor::Unknown,
                 BMCVendor::Unknown => ComputeTrayVendor::Unknown,
             }
         );

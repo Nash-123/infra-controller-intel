@@ -51,6 +51,7 @@ pub enum HwType {
     LiteonPowerShelf,
     DeltaPowerShelf,
     NvSwitch,
+    Intel,
     VeraRubin,
 }
 
@@ -73,6 +74,7 @@ impl HwType {
             Self::DeltaPowerShelf => Some(bmc_vendor::BMCVendor::Delta),
             Self::NvSwitch => Some(bmc_vendor::BMCVendor::Nvidia),
             Self::Supermicro => Some(bmc_vendor::BMCVendor::Supermicro),
+            Self::Intel => Some(bmc_vendor::BMCVendor::Intel),
             Self::Viking => Some(bmc_vendor::BMCVendor::Nvidia),
             Self::VeraRubin => Some(bmc_vendor::BMCVendor::Nvidia),
         }
@@ -101,6 +103,7 @@ impl HwType {
             Self::LiteonPowerShelf => None,
             Self::DeltaPowerShelf => None,
             Self::NvSwitch => None,
+            Self::Intel => None,
             Self::Supermicro => None,
             Self::Viking => Some(BiosAttr::new_str("NvidiaInfiniteboot", "Enable")),
             // Same EmbeddedUefiShell polarity as GB200 / libredfish NvidiaGBx00.
@@ -193,6 +196,7 @@ mod tests {
                 HwType::LiteonPowerShelf => Some(BMCVendor::Liteon),
                 HwType::DeltaPowerShelf => Some(BMCVendor::Delta),
                 HwType::NvSwitch => Some(BMCVendor::Nvidia),
+                HwType::Intel => Some(BMCVendor::Intel),
                 HwType::VeraRubin => Some(BMCVendor::Nvidia),
             }
         );

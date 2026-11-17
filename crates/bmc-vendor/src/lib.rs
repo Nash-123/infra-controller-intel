@@ -42,6 +42,7 @@ pub enum BMCVendor {
     Nvidia, // DPU, Viking, Oberon
     Liteon,
     Delta,
+    Intel,
     #[serde(other)]
     #[default]
     Unknown,
@@ -66,6 +67,7 @@ impl From<&str> for BMCVendor {
             "nvidia" => BMCVendor::Nvidia,
             "liteon" => BMCVendor::Liteon,
             "delta" => BMCVendor::Delta,
+            "intel" => BMCVendor::Intel,
             _ => BMCVendor::Unknown,
         }
     }
@@ -168,6 +170,7 @@ impl BMCVendor {
             "Supermicro" => BMCVendor::Supermicro,
             "Giga Computing" => BMCVendor::GigaComputing,
             "HPE" => BMCVendor::Hpe,
+            "Intel Corporation" => BMCVendor::Intel,
             _ => BMCVendor::Unknown,
         }
     }
@@ -184,6 +187,7 @@ impl BMCVendor {
             BMCVendor::Nvidia => "Nvidia",
             BMCVendor::Liteon => "Liteon",
             BMCVendor::Delta => "Delta",
+            BMCVendor::Intel => "Intel",
             BMCVendor::Unknown => "Unknown",
         }
         .to_string()
@@ -310,6 +314,12 @@ mod tests {
                     "Delta".to_string(),
                     VendorPredicates::default(),
                 ),
+                "InTeL" => (
+                    BMCVendor::Intel,
+                    "intel".to_string(),
+                    "Intel".to_string(),
+                    VendorPredicates::default(),
+                ),
                 "unknown" => (
                     BMCVendor::Unknown,
                     "unknown".to_string(),
@@ -355,6 +365,7 @@ mod tests {
                 "Supermicro" => BMCVendor::Supermicro,
                 "Giga Computing" => BMCVendor::GigaComputing,
                 "HPE" => BMCVendor::Hpe,
+                "Intel Corporation" => BMCVendor::Intel,
             }
 
             "unknown system vendors" {
