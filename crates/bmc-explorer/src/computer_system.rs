@@ -281,12 +281,14 @@ impl<B: Bmc> ExploredComputerSystem<B> {
 
         let boot_order = self.system.boot_order().map(|order| ModelBootOrder {
             boot_order: order
-                .iter()
+                .into_iter()
                 .filter_map(|boot_ref| {
-                    self.boot_options
+                    match self
+                        .boot_options
                         .iter()
-                        .find(|opt| opt.boot_reference() == *boot_ref)
-                        .map(|opt| ModelBootOption {
+                        .find(|opt| opt.boot_reference() == boot_ref)
+                    {
+                        Some(opt) => Some(ModelBootOption {
                             id: opt.raw().id.clone(),
                             display_name: opt
                                 .display_name()
@@ -294,7 +296,21 @@ impl<B: Bmc> ExploredComputerSystem<B> {
                                 .unwrap_or("".into()),
                             uefi_device_path: opt.uefi_device_path().map(|v| v.to_string()),
                             boot_option_enabled: opt.enabled(),
-                        })
+                        }),
+                        // Intel S2600BP BIOSes list BootOrder by entry name and have
+                        // no BootOptions collection: report the names rather than
+                        // dropping every entry.
+                        None if self.boot_options.is_empty() => {
+                            let name = boot_ref.into_inner().to_string();
+                            Some(ModelBootOption {
+                                id: name.clone(),
+                                display_name: name,
+                                uefi_device_path: None,
+                                boot_option_enabled: None,
+                            })
+                        }
+                        None => None,
+                    }
                 })
                 .collect(),
         });
