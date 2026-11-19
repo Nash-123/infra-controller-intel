@@ -563,10 +563,12 @@ impl BmcEndpointExplorer {
             Err(error) => error,
         };
 
-        // Lite-On and Delta power shelves omit ServiceRoot vendor details, so
-        // their Chassis manufacturer is the authoritative fallback. Other
-        // endpoint kinds should not need this workaround.
-        let Some(ExpectedEntity::PowerShelf(expected_power_shelf)) = expected else {
+        // Lite-On and Delta power shelves, and Intel server boards (S2600BPB),
+        // omit ServiceRoot vendor details, so their Chassis manufacturer is the
+        // authoritative fallback. Other endpoint kinds should not need this.
+        let Some(expected) = expected.filter(|e| {
+            matches!(e, ExpectedEntity::PowerShelf(_) | ExpectedEntity::Machine(_))
+        }) else {
             tracing::error!(
                 %bmc_ip_address,
                 error = %service_root_error,
@@ -581,10 +583,10 @@ impl BmcEndpointExplorer {
             .await
         {
             Ok(Credentials::UsernamePassword { username, password }) => (username, password),
-            Err(_) => (
-                expected_power_shelf.bmc_username.clone(),
-                expected_power_shelf.bmc_password.clone(),
-            ),
+            Err(_) => {
+                let data = expected.bmc_credentials_data();
+                (data.username.clone(), data.password.clone())
+            }
         };
 
         let chassis_vendor = match self
@@ -606,18 +608,25 @@ impl BmcEndpointExplorer {
         };
 
         let chassis_vendor_lc = chassis_vendor.to_lowercase();
-        let vendor = if chassis_vendor_lc.contains("lite-on") {
-            RedfishVendor::LiteOnPowerShelf
-        } else if chassis_vendor_lc.contains("delta") {
-            RedfishVendor::DeltaPowerShelf
-        } else {
-            tracing::error!(
-                %bmc_ip_address,
-                error = %service_root_error,
-                observed_chassis_vendor = %chassis_vendor,
-                "Failed to probe Redfish service root endpoint"
-            );
-            return Err(service_root_error);
+        let vendor = match expected {
+            ExpectedEntity::PowerShelf(_) if chassis_vendor_lc.contains("lite-on") => {
+                RedfishVendor::LiteOnPowerShelf
+            }
+            ExpectedEntity::PowerShelf(_) if chassis_vendor_lc.contains("delta") => {
+                RedfishVendor::DeltaPowerShelf
+            }
+            ExpectedEntity::Machine(_) if chassis_vendor_lc.starts_with("intel") => {
+                RedfishVendor::Intel
+            }
+            _ => {
+                tracing::error!(
+                    %bmc_ip_address,
+                    error = %service_root_error,
+                    observed_chassis_vendor = %chassis_vendor,
+                    "Failed to probe Redfish service root endpoint"
+                );
+                return Err(service_root_error);
+            }
         };
         Ok(vendor)
     }
@@ -2027,6 +2036,31 @@ mod tests {
             log.message != "Failed to probe Redfish service root endpoint"
                 && log.message != "BMC ServiceRoot did not report a recognized vendor"
         }));
+    }
+
+    #[tokio::test]
+    async fn intel_host_vendor_falls_back_to_chassis_manufacturer() {
+        let sim = Arc::new(RedfishSim::default());
+        sim.set_service_root_vendor(None);
+        sim.set_chassis_manufacturer(Some("Intel Corporation".to_string()));
+        let explorer = explorer_with_redfish_sim(sim);
+        let bmc_ip_address: SocketAddr = "127.0.0.1:443".parse().unwrap();
+        let bmc_mac_address = "02:00:00:00:00:01".parse().unwrap();
+        let expected = ExpectedEntity::Machine(ExpectedMachine {
+            id: None,
+            bmc_mac_address,
+            data: ExpectedMachineData {
+                bmc_username: "root".to_string(),
+                bmc_password: "factory_password".to_string(),
+                ..Default::default()
+            },
+        });
+
+        let result = explorer
+            .resolve_redfish_vendor(bmc_ip_address, bmc_mac_address, Some(&expected))
+            .await;
+
+        assert_eq!(result.unwrap(), RedfishVendor::Intel);
     }
 
     #[tokio::test]
