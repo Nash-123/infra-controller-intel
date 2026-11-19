@@ -11,3 +11,7 @@
 [submodule "helm-prereqs/doca-platform"]
 	path = helm-prereqs/doca-platform
 	url = https://github.com/NVIDIA/doca-platform.git
+[submodule "libredfish"]
+	path = libredfish
+	url = https://github.com/Nash-123/libredfish-intel.git
+	branch = intel-v0.47.25
