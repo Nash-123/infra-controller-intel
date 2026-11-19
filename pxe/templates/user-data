@@ -3,8 +3,12 @@ cat << \ZOF >/etc/bf.cfg
 # SFC variables
 ENABLE_BR_HBN=yes
 ENABLE_BR_SFC=yes
+# BLR BF-3s are single-port: the installer defaults to p0,p1 and pf1hpf, which do not exist.
+BR_HBN_UPLINKS=p0
 {% if forge_hbn_reps %}
 BR_HBN_REPS={{ forge_hbn_reps }}
+{% else %}
+BR_HBN_REPS=pf0hpf,pf0vf0-pf0vf13
 {% endif %}
 # Include `bmc_fw_update` file content
 {{ forge_bmc_fw_update }}
