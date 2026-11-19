@@ -585,7 +585,7 @@ impl BmcEndpointExplorer {
             Ok(Credentials::UsernamePassword { username, password }) => (username, password),
             Err(_) => {
                 let data = expected.bmc_credentials_data();
-                (data.username.clone(), data.password.clone())
+                (data.username.to_string(), data.password.to_string())
             }
         };
 
@@ -2041,7 +2041,7 @@ mod tests {
     #[tokio::test]
     async fn intel_host_vendor_falls_back_to_chassis_manufacturer() {
         let sim = Arc::new(RedfishSim::default());
-        sim.set_service_root_vendor(None);
+        sim.set_service_root_vendor(Some(String::new()));
         sim.set_chassis_manufacturer(Some("Intel Corporation".to_string()));
         let explorer = explorer_with_redfish_sim(sim);
         let bmc_ip_address: SocketAddr = "127.0.0.1:443".parse().unwrap();
