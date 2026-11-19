@@ -567,7 +567,10 @@ impl BmcEndpointExplorer {
         // omit ServiceRoot vendor details, so their Chassis manufacturer is the
         // authoritative fallback. Other endpoint kinds should not need this.
         let Some(expected) = expected.filter(|e| {
-            matches!(e, ExpectedEntity::PowerShelf(_) | ExpectedEntity::Machine(_))
+            matches!(
+                e,
+                ExpectedEntity::PowerShelf(_) | ExpectedEntity::Machine(_)
+            )
         }) else {
             tracing::error!(
                 %bmc_ip_address,
